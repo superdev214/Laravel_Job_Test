@@ -2,7 +2,8 @@
 
 <h1 style="color:blue">Registration of Publicaiton Made with Laravel</h1>
 
-<img src="frontend.png" />
+<img src="login.png" />
+<img src="home.png" />
 
 <h2 style="color:cyan">Installation</h2>
 <ul>
