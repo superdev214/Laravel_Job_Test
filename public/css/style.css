@@ -199,6 +199,12 @@ pre {
 .table td {
     border: 1px solid #606060;
     padding: 0.5rem;
+    color: white;
+}
+.table tbody tr td img:hover {
+    -ms-transform: scale(1.5); /* IE 9 */
+    -webkit-transform: scale(1.5); /* Safari 3-8 */
+    transform: scale(1.5);
 }
 
 /* ITEMS */
@@ -816,4 +822,44 @@ dl.compact > dd {
 .morelabel,
 .lesslabel {
     cursor: pointer;
+}
+.dropbtn {
+    background-color: #333;
+    color: #ffffff;
+    padding: 8px;
+    font-size: 16px;
+    border: none;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #333;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #222;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
 }

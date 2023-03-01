@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('password');
             $table->longtext('avatar');
             $table->timestamps();
+
+            $table->primary('id');
         });
     }
 

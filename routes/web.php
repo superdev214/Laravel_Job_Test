@@ -32,4 +32,6 @@ Route::get('/logout', [AuthController::class, 'logout'])
 
 Route::middleware('auth')->group(function () {
     Route::get('/home', [IndexController::class, 'viewHome'])->name('home');
+    Route::get('/create/pub/{section}/{type}/{pub?}', [IndexController::class, 'viewCreatePub'])->name('create-pub');
+    Route::post('/create/pub/{section}/{type}/{pub?}', [IndexController::class, 'createPub'])->name('post.createpub');
 });
