@@ -30,7 +30,7 @@ class PubRequest extends FormRequest
             'title' => 'required|max:100',
             'summary' => 'required',
             'authors' => 'required',
-            'pdffile' => 'required|mimes:pdf',
+            'pdffile' => 'mimes:pdf',
             'client_name' => 'min:3',
             'project_name' => 'min:3',
             'topics' => 'min:3',
@@ -115,12 +115,19 @@ class PubRequest extends FormRequest
         $pub->type = $type;
 
         //// pdf file upload //////
-
-
+        if(!is_null($this->pdffile)) {
+            $fileName = time().'.'.$this->pdffile->extension();
+            $this->pdffile->move(public_path('uploads'), $fileName);
+            $pub->pdffile = $fileName;
+        }
         ///////////////////////////
         if($type == 'article') {
-            $pub->startpage = $this->conversorStartPage();
-            $pub->endpage = $this->conversorEndPage();
+            if(!is_null($this->startpage)) {
+                $pub->startpage = $this->conversorStartPage();
+            }
+            if(!is_null($this->endpage)) {
+                $pub->endpage = $this->conversorEndPage();
+            }
         } elseif($type == 'client report') {
             $pub->client_name = $this->client_name;
             $pub->project_name = $this->project_name;
@@ -133,6 +140,6 @@ class PubRequest extends FormRequest
             'success',
             'You have successfully edited your publication.'
         );
-        return redirect()->back();
+        return redirect()->route('home');
     }
 }

@@ -69,14 +69,14 @@
         @if($type === 'article')
         <div class="form-now">
             <label for="startpage" class="form-label">Choose Start Page</label>
-            <input id="startpage" type="file" name="startpage">
+            <input id="startpage" type="file" name="startpage" @if($section=='add' ) required="" @endif>
         </div>
         @error('startpage')
         <p class="text-danger">{{ $errors->first('startpage') }}</p>
         @enderror
         <div class="form-now">
             <label for="endpage" class="form-label">Choose End Page</label>
-            <input id="endpage" type="file" name="endpage">
+            <input id="endpage" type="file" name="endpage" @if($section=='add' ) required="" @endif>
         </div>
         @error('endpage')
         <p class="text-danger">{{ $errors->first('endpage') }}</p>
@@ -84,7 +84,7 @@
         @endif
         <div class="form-now">
             <label for="pdffile" class="form-label">Choose PDF File</label>
-            <input id="pdffile" type="file" name="pdffile">
+            <input id="pdffile" type="file" name="pdffile" @if($section=='add' ) required="" @endif>
         </div>
         @error('pdffile')
         <p class="text-danger">{{ $errors->first('pdffile') }}</p>

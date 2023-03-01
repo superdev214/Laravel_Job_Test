@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Publication;
 use App\Http\Requests\PubRequest;
-;
+use Illuminate\Support\Facades\Response;
 
 class IndexController extends Controller
 {
@@ -74,11 +74,11 @@ class IndexController extends Controller
             }
         } elseif (
             $section === 'edit' &&
-            !is_null($product) &&
-            $product->exists()
+            !is_null($pub) &&
+            $pub->exists()
         ) {
             try {
-                return $request->edit($type, $product);
+                return $request->edit($type, $pub);
             } catch (Exception $exception) {
                 session()->flash('error', $exception->getMessage());
                 return redirect()->back();
@@ -86,5 +86,33 @@ class IndexController extends Controller
         } else {
             return abort(404);
         }
+    }
+
+    /**
+     * Create Publication 
+     * @param  string       $filename
+     *
+     * @return Response
+     */
+    public function getDownload($filename)
+    {
+        //PDF file is stored under project/public/download/info.pdf
+        $file= public_path(). "/uploads/" . $filename;
+
+        $headers = array(
+                'Content-Type: application/pdf',
+                );
+
+        return Response::download($file, 'book.pdf', $headers);
+        session()->flash('success', 'You have successfully downloaded');
+        return redirect()->back();
+    }
+
+    public function delPub(Publication $pub)
+    {
+        $pub->delete();
+
+        session()->flash('success', 'You have successfully deleted publication');
+        return redirect()->back();
     }
 }
