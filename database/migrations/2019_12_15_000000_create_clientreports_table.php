@@ -11,29 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('publications', function (Blueprint $table) {
+        Schema::create('clientreports', function (Blueprint $table) {
             $table->uuid('id');
             $table->uuid('user_id');
             $table->string('title');
             $table->string('summary');
-            $table->string('type');
-            $table->text('authors');
+            $table->string('type')->default('clientreport');
             $table->text('pdffile');
-            $table->longtext('startpage');
-            $table->longtext('endpage');
             $table->string('client_name');
             $table->string('project_name');
-            $table->text('topics');
-            $table->string('numpages');
             $table->timestamps();
 
             $table->primary('id');
             
             $table
-                ->foreign('user_id')
-                ->references('id')
-                ->on('users')
-                ->onDelete('CASCADE');
+            ->foreign('user_id')
+            ->references('id')
+            ->on('users')
+            ->onDelete('CASCADE');
         });
     }
 
@@ -42,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('publications');
+        Schema::dropIfExists('clientreports');
     }
 };

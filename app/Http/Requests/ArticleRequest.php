@@ -3,11 +3,11 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Publication;
+use App\Models\Article;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class PubRequest extends FormRequest
+class ArticleRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request

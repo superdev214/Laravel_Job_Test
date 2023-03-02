@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Carbon\Carbon;
 use App\Traits\UUIDs;
 
-class Publication extends Authenticatable
+class Authorsofarticle extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, UUIDs;
 
