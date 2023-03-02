@@ -31,7 +31,7 @@ Route::get('/logout', [AuthController::class, 'logout'])
     ->middleware('auth');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/home', [IndexController::class, 'viewHome'])->name('home');
+    Route::get('/', [IndexController::class, 'viewHome'])->name('home');
     Route::get('/create/article/{section}/{article?}', [IndexController::class, 'viewCreateArticle'])->name('create-article');
     Route::get('/create/report/{section}/{report?}', [IndexController::class, 'viewCreateReport'])->name('create-report');
     Route::get('/create/book/{section}/{book?}', [IndexController::class, 'viewCreateBook'])->name('create-book');
