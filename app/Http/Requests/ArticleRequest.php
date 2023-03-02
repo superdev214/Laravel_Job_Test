@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Article;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\Authorsofarticle;
 
 class ArticleRequest extends FormRequest
 {
@@ -27,39 +28,12 @@ class ArticleRequest extends FormRequest
     public function rules()
     {
         return [
-            'title' => 'required|max:100',
+            'title' => 'required|min:3|max:100',
             'summary' => 'required',
-            'authors' => 'required',
             'pdffile' => 'mimes:pdf',
-            'client_name' => 'min:3',
-            'project_name' => 'min:3',
-            'topics' => 'min:3',
-            'numpages' => 'numeric|min:1',
-            'startpage' => 'image|mimes:jpeg,jpg,png|max:2048',
-            'endpage' => 'image|mimes:jpeg,jpg,png|max:2048',
+            'startpage' => 'required|numeric',
+            'endpage' => 'required|numeric',
         ];
-    }
-
-    private function conversorStartPage()
-    {
-        $image = $this->startpage->store('img'); #Save pub image
-        $path = base_path("/storage/app/$image"); #Take the pub image path
-        $type = pathinfo($path, PATHINFO_EXTENSION); #Get pub image type
-        $data = file_get_contents($path); #Get the pub image
-        $imageBase64 = "data:image/$type;base64," . base64_encode($data); #Convert pub image to base64
-        Storage::delete($image); #Delete the pub image from the server as it is no longer needed
-        return $imageBase64;
-    }
-
-    private function conversorEndPage()
-    {
-        $image = $this->endpage->store('img'); #Save pub image
-        $path = base_path("/storage/app/$image"); #Take the pub image path
-        $type = pathinfo($path, PATHINFO_EXTENSION); #Get pub image type
-        $data = file_get_contents($path); #Get the pub image
-        $imageBase64 = "data:image/$type;base64," . base64_encode($data); #Convert pub image to base64
-        Storage::delete($image); #Delete the pub image from the server as it is no longer needed
-        return $imageBase64;
     }
 
     /**
@@ -68,36 +42,36 @@ class ArticleRequest extends FormRequest
      *
      * @return Illuminate\Routing\Redirector
      */
-    public function add($type)
+    public function add()
     {
-        #Create a new pub
-        $pub = new Publication();
-        $pub->user_id = auth()->user()->id;
-        $pub->title = $this->title;
-        $pub->summary = $this->summary;
-        $pub->authors = $this->authors;
-        $pub->type = $type;
+        #Create a new article
+        $article = new Article();
+        $article->user_id = auth()->user()->id;
+        $article->title = $this->title;
+        $article->summary = $this->summary;
 
         //// pdf file upload //////
         $fileName = time().'.'.$this->pdffile->extension();
         $this->pdffile->move(public_path('uploads'), $fileName);
-        $pub->pdffile = $fileName;
+        $article->pdffile = $fileName;
         ///////////////////////////
-        if($type == 'article') {
-            $pub->startpage = $this->conversorStartPage();
-            $pub->endpage = $this->conversorEndPage();
-        } elseif($type == 'client report') {
-            $pub->client_name = $this->client_name;
-            $pub->project_name = $this->project_name;
-        } elseif($type == 'book') {
-            $pub->topics = $this->topics;
-            $pub->numpages = $this->numpages;
+
+        $article->startpage = $this->startpage;
+        $article->endpage = $this->endpage;
+        $article->save();
+
+        $authors = $this->input('authors');
+        foreach ($authors as $author) {
+            $authorofarticle = new Authorsofarticle();
+            $authorofarticle->author_id = $author;
+            $authorofarticle->article_id = $article->id;
+
+            $authorofarticle->save();
         }
-        $pub->save();
 
         session()->flash(
             'success',
-            'You have successfully registered your publication!'
+            'You have successfully registered your article!'
         );
         return redirect()->route('home');
     }
@@ -108,37 +82,38 @@ class ArticleRequest extends FormRequest
      *
      * @return Illuminate\Routing\Redirector
      */
-    public function edit($type, Publication $pub)
+    public function edit(Article $article)
     {
-        $pub->title = $this->title;
-        $pub->summary = $this->summary;
-        $pub->type = $type;
+        $article->title = $this->title;
+        $article->summary = $this->summary;
 
         //// pdf file upload //////
         if(!is_null($this->pdffile)) {
             $fileName = time().'.'.$this->pdffile->extension();
             $this->pdffile->move(public_path('uploads'), $fileName);
-            $pub->pdffile = $fileName;
+            $article->pdffile = $fileName;
         }
         ///////////////////////////
-        if($type == 'article') {
-            if(!is_null($this->startpage)) {
-                $pub->startpage = $this->conversorStartPage();
-            }
-            if(!is_null($this->endpage)) {
-                $pub->endpage = $this->conversorEndPage();
-            }
-        } elseif($type == 'client report') {
-            $pub->client_name = $this->client_name;
-            $pub->project_name = $this->project_name;
-        } elseif($type == 'book') {
-            $pub->topics = $this->topics;
-            $pub->numpages = $this->numpages;
+        
+        $article->startpage = $this->startpage;
+        $article->endpage = $this->endpage;
+        $article->save();
+
+        $authors = $this->input('authors');
+        $authorofarticles = Authorsofarticle::where('article_id', $article->id)->get();
+        foreach($authorofarticles as $authorofarticle) {
+            $authorofarticle->delete();
         }
-        $pub->save();
+        foreach ($authors as $author) {
+            $authorofarticle = new Authorsofarticle();
+            $authorofarticle->author_id = $author;
+            $authorofarticle->article_id = $article->id;
+
+            $authorofarticle->save();
+        }
         session()->flash(
             'success',
-            'You have successfully edited your publication.'
+            'You have successfully edited your article.'
         );
         return redirect()->route('home');
     }

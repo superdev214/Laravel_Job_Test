@@ -3,9 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Clientreport;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\{Authorsofclientreport,Clientreport};
 
 class ClientreportRequest extends FormRequest
 {
@@ -27,118 +27,91 @@ class ClientreportRequest extends FormRequest
     public function rules()
     {
         return [
-            'title' => 'required|max:100',
+            'title' => 'required|min:3|max:100',
             'summary' => 'required',
-            'authors' => 'required',
             'pdffile' => 'mimes:pdf',
-            'client_name' => 'min:3',
-            'project_name' => 'min:3',
-            'topics' => 'min:3',
-            'numpages' => 'numeric|min:1',
-            'startpage' => 'image|mimes:jpeg,jpg,png|max:2048',
-            'endpage' => 'image|mimes:jpeg,jpg,png|max:2048',
+            'clientname' => 'required|max:100',
+            'projectname' => 'required|max:100',
         ];
     }
 
-    private function conversorStartPage()
-    {
-        $image = $this->startpage->store('img'); #Save pub image
-        $path = base_path("/storage/app/$image"); #Take the pub image path
-        $type = pathinfo($path, PATHINFO_EXTENSION); #Get pub image type
-        $data = file_get_contents($path); #Get the pub image
-        $imageBase64 = "data:image/$type;base64," . base64_encode($data); #Convert pub image to base64
-        Storage::delete($image); #Delete the pub image from the server as it is no longer needed
-        return $imageBase64;
-    }
-
-    private function conversorEndPage()
-    {
-        $image = $this->endpage->store('img'); #Save pub image
-        $path = base_path("/storage/app/$image"); #Take the pub image path
-        $type = pathinfo($path, PATHINFO_EXTENSION); #Get pub image type
-        $data = file_get_contents($path); #Get the pub image
-        $imageBase64 = "data:image/$type;base64," . base64_encode($data); #Convert pub image to base64
-        Storage::delete($image); #Delete the pub image from the server as it is no longer needed
-        return $imageBase64;
-    }
-
     /**
-     * Add Publication
-     * @param string $type
+     * Add Client Report
      *
      * @return Illuminate\Routing\Redirector
      */
-    public function add($type)
+    public function add()
     {
-        #Create a new pub
-        $pub = new Publication();
-        $pub->user_id = auth()->user()->id;
-        $pub->title = $this->title;
-        $pub->summary = $this->summary;
-        $pub->authors = $this->authors;
-        $pub->type = $type;
+        #Create a new report
+        $report = new Clientreport();
+        $report->user_id = auth()->user()->id;
+        $report->title = $this->title;
+        $report->summary = $this->summary;
 
         //// pdf file upload //////
         $fileName = time().'.'.$this->pdffile->extension();
         $this->pdffile->move(public_path('uploads'), $fileName);
-        $pub->pdffile = $fileName;
+        $report->pdffile = $fileName;
         ///////////////////////////
-        if($type == 'article') {
-            $pub->startpage = $this->conversorStartPage();
-            $pub->endpage = $this->conversorEndPage();
-        } elseif($type == 'client report') {
-            $pub->client_name = $this->client_name;
-            $pub->project_name = $this->project_name;
-        } elseif($type == 'book') {
-            $pub->topics = $this->topics;
-            $pub->numpages = $this->numpages;
+
+        $report->client_name = $this->clientname;
+        $report->project_name = $this->projectname;
+        $report->save();
+
+        $authors = $this->input('authors');
+        foreach ($authors as $author) {
+            $authorofclientreport = new Authorsofclientreport();
+            $authorofclientreport->author_id = $author;
+            $authorofclientreport->clientreport_id = $report->id;
+
+            $authorofclientreport->save();
         }
-        $pub->save();
 
         session()->flash(
             'success',
-            'You have successfully registered your publication!'
+            'You have successfully registered your report!'
         );
         return redirect()->route('home');
     }
 
     /**
      * Edit pub
-     * @param  Publication $pub
+     * @param  Clientreport $report
      *
      * @return Illuminate\Routing\Redirector
      */
-    public function edit($type, Publication $pub)
+    public function edit(Clientreport $report)
     {
-        $pub->title = $this->title;
-        $pub->summary = $this->summary;
-        $pub->type = $type;
+        $report->title = $this->title;
+        $report->summary = $this->summary;
 
         //// pdf file upload //////
         if(!is_null($this->pdffile)) {
             $fileName = time().'.'.$this->pdffile->extension();
             $this->pdffile->move(public_path('uploads'), $fileName);
-            $pub->pdffile = $fileName;
+            $report->pdffile = $fileName;
         }
         ///////////////////////////
-        if($type == 'article') {
-            if(!is_null($this->startpage)) {
-                $pub->startpage = $this->conversorStartPage();
-            }
-            if(!is_null($this->endpage)) {
-                $pub->endpage = $this->conversorEndPage();
-            }
-        } elseif($type == 'client report') {
-            $pub->client_name = $this->client_name;
-            $pub->project_name = $this->project_name;
-        } elseif($type == 'book') {
-            $pub->topics = $this->topics;
-            $pub->numpages = $this->numpages;
+        
+        $report->client_name = $this->clientname;
+        $report->project_name = $this->projectname;
+        $report->save();
+
+        $authors = $this->input('authors');
+        $authorofclientreports = Authorsofclientreport::where('clientreport_id', $report->id)->get();
+        foreach($authorofclientreports as $authorofreport) {
+            $authorofreport->delete();
         }
-        $pub->save();
+        foreach ($authors as $author) {
+            $authorofreport = new Authorsofclientreport();
+            $authorofreport->author_id = $author;
+            $authorofreport->clientreport_id = $report->id;
+
+            $authorofreport->save();
+        }
         session()->flash(
             'success',
-            'You have successfully edited your publication.'
+            'You have successfully edited your report.'
         );
         return redirect()->route('home');
     }

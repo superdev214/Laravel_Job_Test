@@ -14,4 +14,13 @@ class Article extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, UUIDs;
 
+    public function authors()
+    {
+        $authorsofarticle = Authorsofarticle::where('article_id', $this->id)
+            ->select('author_id')
+            ->get();
+        $authors = Author::whereIn('id', $authorsofarticle)->get();
+        
+        return $authors;
+    }
 }
