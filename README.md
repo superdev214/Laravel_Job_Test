@@ -14,7 +14,8 @@
     <li> > cp .env.example .env</li>
     <li> > Set up .env file</li>
     <li> > php artisan key:generate</li>
-    <li> > php artisan migrate:fresh --seed</li>
+    <li> > php artisan migrate:fresh</li>
+    <li> > php artisan db:seed</li>
     <li> > php artisan serve</li>
     <li> <a href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a> </li>
     </ul>
